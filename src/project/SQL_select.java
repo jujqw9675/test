@@ -1,0 +1,94 @@
+package project;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Scanner;
+
+public class SQL_select {
+
+	public void classlist(String gradeclass) throws Exception {
+		Class.forName("oracle.jdbc.driver.OracleDriver");
+
+		String url = "jdbc:oracle:thin:@127.0.0.1:1521:xe";
+		String user = "system";
+		String pass = "1111";
+		String sql = "";
+
+		Connection conn = DriverManager.getConnection(url, user, pass);
+
+		System.out.print("조회하실 학년/반을 입력하세요(전학년조회 0000) >> ");
+		String num = new Scanner(System.in).nextLine()/* 변수명-학번4자리 */; // test
+		PreparedStatement pst = null;
+		if(num.equals("0000")){ /// 
+			sql = "select * from Student";
+			pst = conn.prepareStatement(sql);
+		}else{
+			sql = "select * from Student where num like ?";
+			pst = conn.prepareStatement(sql);
+			pst.setString(1, num + "__");
+		}	
+		ResultSet rs = pst.executeQuery();
+		ResultSetMetaData rsmd = rs.getMetaData();
+		System.out.println(
+				"학번\t이름\t연락처\t\t주소\t\t\t\t국어\t영어\t수학\t자바\t안드로이드\t총점\t평균")/* 필요 없음 */; // test
+		int total_k = 0, total_e = 0, total_m = 0, total_j = 0, total_a = 0, total_all = 0;
+		while (rs.next()) {
+			for (int i = 1; i <= rsmd.getColumnCount(); i++) {
+				System.out.print(rs.getString(i) + "\t")/* GUI에 출력 */; // test
+			}
+			total_k += rs.getInt("korean");
+			total_e += rs.getInt("english");
+			total_m += rs.getInt("math");
+			total_j += rs.getInt("java");
+			total_a += rs.getInt("android");
+			total_all += rs.getInt("all_score");
+			System.out.println();
+		}
+		System.out.println("평균\t\t\t\t\t\t\t\t" + ((int)((total_k/(double)(rs.getRow()))*100))/100.0 + "\t"
+				 + ((int)((total_e/(double)(rs.getRow()))*100))/100.0 + "\t"
+				 + ((int)((total_m/(double)(rs.getRow()))*100))/100.0 + "\t"
+				 + ((int)((total_j/(double)(rs.getRow()))*100))/100.0 + "\t"
+				 + ((int)((total_a/(double)(rs.getRow()))*100))/100.0 + "\t"
+				 + ((int)((total_all/(double)(rs.getRow()))*100))/100.0 + "\t");
+	} // end method
+	// 우리반 조회
+
+	public void sublist(String sub) throws Exception {
+		Class.forName("oracle.jdbc.driver.OracleDriver");
+
+		String url = "jdbc:oracle:thin:@127.0.0.1:1521:xe";
+		String user = "system";
+		String pass = "1111";
+		String sql = "";
+
+		Connection conn = DriverManager.getConnection(url, user, pass);
+		
+		System.out.print("학년/반 입력 >> ");
+		String num = new Scanner(System.in).nextLine();
+		if(num.equals("0000")){
+			sql = "select num,name," + sub + " from Student";
+		} else {
+			sql = "select num,name," + sub + " from Student where num like '" + num + "__'";
+		}
+
+		Statement st = conn.createStatement();
+		ResultSet rs = st.executeQuery(sql);
+		ResultSetMetaData rsmd = rs.getMetaData();
+		System.out.println("학번\t이름\t" + sub)/* 필요 없음 */; // test
+		int total = 0;
+		while (rs.next()) {
+			for (int i = 1; i <= rsmd.getColumnCount(); i++) {
+				System.out.print(rs.getString(i) + "\t")/* GUI에 출력 */; // test
+			}
+			total += Integer.parseInt(rs.getString(3));
+			System.out.println();
+		}
+		System.out.println("평균\t\t" + ((int)((total/(double)(rs.getRow()))*100))/100.0);
+	} // end method
+	// 과목 조회
+
+} // end class
